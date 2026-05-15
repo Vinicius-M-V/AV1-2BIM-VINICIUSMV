@@ -1,44 +1,45 @@
-const API_URL = "https://marvel.emreparker.com/v1/characters";
+const API_URL = "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/all.json";
 
 async function buscarPersonagens() {
-    try{
+    try {
         const response = await fetch(API_URL);
-        if (!response.ok) {
-            throw new Error("Erro carregar dados");
-        }
-        const dados = await response.json();
-        const personagens = dados.slice(0, 20);
-        exibirPersonagens(personagens);
+        if (!response.ok) throw new Error("Erro ao carregar API");
+        
+        const dados = await response.json();        
+        const todosMarvel = dados.filter(heroi => heroi.biography.publisher === "Marvel Comics");
+        const marvelEmbaralhado = todosMarvel.sort(() => 0.5 - Math.random());        
+        const personagensExibir = marvelEmbaralhado.slice(0, 20);
+        
+        exibirPersonagens(personagensExibir);
     } catch (error) {
-    console.error("Erro Detectado", error);
-    document.getElementById("lista-personagens").innerHTML = `<p style="color: red;">Erro de carregamento.</p>`;
-    }    
+        console.error("Erro:", error);
+        document.getElementById("lista-personagens").innerHTML = "<p class='text-center'>Erro ao carregar heróis.</p>";
+    }
 }
-    
-function exibirPersonagens(personagens) {
+
+function exibirPersonagens(lista) {
     const container = document.getElementById("lista-personagens");
     container.innerHTML = "";
 
-    personagens.forEach (personagem => {
-        const card = document.createElement("div");
-        card.style.border = "1px solid #ccc";
-        card.style.margin = "10px";
-        card.style.padding = "10px";
-        card.style.display = "inline-block";
-        card.style.width = "200px";
-        card.style.verticalAlign = "top";
-
-        card.innerHTML = `
-            <img src="${personagem.image || 'https://via.placeholder.com/150'}" alt="${personagem.name}" style="width: 100%;">
-            <h3>${personagem.name}</h3>
-            <button onclick="verDetalhes('${personagem.id}')">Ver Detalhes</button>
+    lista.forEach(heroi => {
+        const col = document.createElement("div"); 
+        col.className = "col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch"; 
+        
+        col.innerHTML = `
+            <div class="card h-100 shadow border-0 text-dark w-100">
+                <img src="${heroi.images.sm}" class="card-img-top" style="height: 250px; object-fit: cover;" alt="${heroi.name}">
+                <div class="card-body text-center d-flex flex-column">
+                    <h5 class="card-title fw-bold">${heroi.name}</h5>
+                    <button class="btn btn-danger mt-auto fw-bold" onclick="verDetalhes(${heroi.id})">VER PERFIL</button>
+                </div>
+            </div>
         `;
-        container.appendChild(card);
+        container.appendChild(col);
     });
 }
-function verDetalhes(id) {
-    console.log("ID do personagem clicado", id);
-}
 
+function verDetalhes(id) {
+    window.location.href = `detalhes.html?id=${id}`;
+}
 
 buscarPersonagens();
